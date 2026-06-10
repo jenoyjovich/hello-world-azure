@@ -29,7 +29,7 @@ def _p(name, position, age, club, rating, gpg, apg, kpg, tkl, aerial,
 # ARGENTINA
 # ---------------------------------------------------------------------------
 ARGENTINA = Team(
-    name="Argentina", code="ARG", confederation="CONMEBOL", fifa_ranking=1,
+    name="Argentina", code="ARG", confederation="CONMEBOL", fifa_ranking=3,
     coach="Lionel Scaloni", formation="4-3-3",
     playing_style="Balanced possession with lethal transitions; world-class "
                   "individual quality up front and a compact midfield.",
@@ -79,7 +79,7 @@ ARGENTINA = Team(
 # FRANCE
 # ---------------------------------------------------------------------------
 FRANCE = Team(
-    name="France", code="FRA", confederation="UEFA", fifa_ranking=2,
+    name="France", code="FRA", confederation="UEFA", fifa_ranking=1,
     coach="Didier Deschamps", formation="4-2-3-1",
     playing_style="Devastating on the counter with elite pace; pragmatic and "
                   "tournament-savvy with arguably the deepest squad on Earth.",
@@ -124,7 +124,7 @@ FRANCE = Team(
 # BRAZIL
 # ---------------------------------------------------------------------------
 BRAZIL = Team(
-    name="Brazil", code="BRA", confederation="CONMEBOL", fifa_ranking=5,
+    name="Brazil", code="BRA", confederation="CONMEBOL", fifa_ranking=6,
     coach="Carlo Ancelotti", formation="4-2-3-1",
     playing_style="Technical, flair-driven attacking play with full-backs "
                   "bombing forward; reorganised defensively under Ancelotti.",
@@ -211,7 +211,7 @@ ENGLAND = Team(
 # SPAIN
 # ---------------------------------------------------------------------------
 SPAIN = Team(
-    name="Spain", code="ESP", confederation="UEFA", fifa_ranking=3,
+    name="Spain", code="ESP", confederation="UEFA", fifa_ranking=2,
     coach="Luis de la Fuente", formation="4-3-3",
     playing_style="Possession-dominant positional play with relentless "
                   "pressing and youthful, fearless wide forwards.",
@@ -256,7 +256,7 @@ SPAIN = Team(
 # PORTUGAL
 # ---------------------------------------------------------------------------
 PORTUGAL = Team(
-    name="Portugal", code="POR", confederation="UEFA", fifa_ranking=6,
+    name="Portugal", code="POR", confederation="UEFA", fifa_ranking=5,
     coach="Roberto Martinez", formation="4-3-3",
     playing_style="Star-studded attack with elite wingers and creators; "
                   "occasionally vulnerable defensively against pace.",
@@ -300,7 +300,7 @@ PORTUGAL = Team(
 # GERMANY
 # ---------------------------------------------------------------------------
 GERMANY = Team(
-    name="Germany", code="GER", confederation="UEFA", fifa_ranking=9,
+    name="Germany", code="GER", confederation="UEFA", fifa_ranking=10,
     coach="Julian Nagelsmann", formation="4-2-3-1",
     playing_style="Resurgent possession football with creative midfield "
                   "talents; reborn under Nagelsmann after lean years.",
@@ -345,7 +345,7 @@ GERMANY = Team(
 # NETHERLANDS
 # ---------------------------------------------------------------------------
 NETHERLANDS = Team(
-    name="Netherlands", code="NED", confederation="UEFA", fifa_ranking=7,
+    name="Netherlands", code="NED", confederation="UEFA", fifa_ranking=8,
     coach="Ronald Koeman", formation="4-3-3",
     playing_style="Structured build-up with elite ball-playing defenders and "
                   "incisive wide attackers; tactically flexible.",
@@ -431,12 +431,19 @@ USA = Team(
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
-ALL_TEAMS = {
+# Nine elite contenders are hand-authored above with detailed squads. The other
+# 39 nations are built from real anchors (FIFA ranking, coach, key players) in
+# extra_teams.py. Together they make up the full 48-team field.
+_DETAILED = {
     t.code: t for t in [
         ARGENTINA, FRANCE, BRAZIL, ENGLAND, SPAIN,
         PORTUGAL, GERMANY, NETHERLANDS, USA,
     ]
 }
+
+from .extra_teams import build_extra_teams  # noqa: E402
+
+ALL_TEAMS = {**build_extra_teams(), **_DETAILED}
 
 
 def get_team(identifier: str):

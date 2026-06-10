@@ -5,12 +5,17 @@ and player statistics into match predictions, power rankings, injury-impact
 analysis, and full knockout-bracket simulations — with optional Claude-powered
 pundit narration on top.
 
-> **Heads-up on data:** the ratings and stats shipped in
-> [`fifa_predictor/data/teams.py`](fifa_predictor/data/teams.py) are
-> **hand-seeded, illustrative values** — not a live data feed. The engine,
-> simulations, and narration are fully real; to get accurate predictions, swap
-> the numbers in that one file for a real source (FIFA rankings, Opta/FBref,
-> transfermarkt injuries). The schema in `models.py` is the contract.
+All **48 teams** of the real tournament are included, organised into the
+official 12-group final draw.
+
+> **What's real vs. modelled:** team **FIFA rankings (April 2026 release),
+> confederations, coaches, key players, and the full group draw are real**.
+> The nine elite contenders have hand-authored squads; the other 39 nations
+> have team-level stats **derived from their FIFA ranking** by a documented
+> model (see [`data/team_builder.py`](fifa_predictor/data/team_builder.py)) —
+> honest estimates, not fake-precise per-player figures. To upgrade accuracy,
+> plug a live stats feed into the data files; the `models.py` schema is the
+> contract.
 
 ## Quick start
 
@@ -20,13 +25,19 @@ pip install -r requirements.txt
 # Injury-adjusted power rankings
 python -m fifa_predictor.cli rankings
 
+# The official 12 groups
+python -m fifa_predictor.cli groups
+
 # Predict a match (knockout resolves draws on penalties)
 python -m fifa_predictor.cli predict ARG FRA --knockout
 
 # What-if: how much does an absence hurt?
 python -m fifa_predictor.cli injury FRA Mbappe
 
-# Simulate a knockout bracket thousands of times
+# Simulate the FULL 48-team tournament (group stage -> R32 -> final)
+python -m fifa_predictor.cli worldcup --runs 2000
+
+# Or simulate a standalone knockout bracket
 python -m fifa_predictor.cli simulate ARG FRA BRA ESP ENG POR GER NED --runs 5000
 ```
 
@@ -39,12 +50,16 @@ enables the optional AI narration layer.
 |---|---|
 | `teams` | List all teams in the model |
 | `rankings` | Power rankings (form + quality + depth + injuries) |
+| `groups` | Show the official 12-group draw |
 | `team <CODE>` | Full squad profile, stats, key players, availability |
 | `predict <A> <B> [--knockout]` | Single-match prediction |
 | `injury <TEAM> <PLAYER>` | Simulate a player's absence |
-| `simulate <CODES...> [--runs N]` | Monte Carlo a knockout bracket |
+| `worldcup [--runs N] [--top N]` | Simulate the full 48-team tournament |
+| `simulate <CODES...> [--runs N]` | Monte Carlo a standalone knockout bracket |
 
-Team codes: `ARG FRA BRA ENG ESP POR GER NED USA` (partial names also work).
+All 48 nations are available by 3-letter code (e.g. `ARG FRA BRA ESP MAR CRO
+COL URU JPN`) or partial name. Run `python -m fifa_predictor.cli teams` for the
+full list.
 
 ## What the prediction model accounts for
 
@@ -100,13 +115,17 @@ so inside Claude Code you can just ask:
 
 ```
 fifa_predictor/
-├── models.py            # Dataclasses: Player, Team, TeamStats, predictions
-├── data/teams.py        # Illustrative dataset — REPLACE with real data
+├── models.py              # Dataclasses: Player, Team, TeamStats, predictions
+├── data/
+│   ├── teams.py           # 9 hand-authored contenders + registry
+│   ├── extra_teams.py     # 39 nations from real anchors (rank/coach/players)
+│   ├── team_builder.py    # Derives team stats from FIFA ranking
+│   └── groups.py          # Official 12-group draw + format constants
 ├── engine/
-│   ├── predictor.py     # Power rating, Poisson match model, injury sim
-│   └── tournament.py    # Monte Carlo bracket simulator
-├── agent.py             # Claude narration layer (+ offline fallback)
-└── cli.py               # Command-line interface
+│   ├── predictor.py       # Power rating, Poisson match model, injury sim
+│   └── tournament.py      # Group-stage + full-tournament Monte Carlo
+├── agent.py               # Claude narration layer (+ offline fallback)
+└── cli.py                 # Command-line interface
 ```
 
 ## Extending

@@ -83,8 +83,9 @@ def build_team(name, code, confederation, fifa_rank, coach,
     squad = []
     used_positions = []
     for i, (pname, ppos, pclub) in enumerate(key_players):
-        bump = 6 - i * 2  # first key player strongest
-        squad.append(_key_player(pname, ppos, pclub, min(94, base + bump), sf))
+        bump = 4 - i * 2  # first key player strongest (+4, +2, 0)
+        # Cap below the hand-authored elite tier so superstars stay on top.
+        squad.append(_key_player(pname, ppos, pclub, min(89, base + bump), sf))
         used_positions.append(ppos)
 
     shape = _SQUAD_SHAPE[:]

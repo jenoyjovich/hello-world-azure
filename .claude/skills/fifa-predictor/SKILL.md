@@ -34,6 +34,9 @@ python -m fifa_predictor.cli teams
 # Injury-adjusted power rankings
 python -m fifa_predictor.cli rankings
 
+# The official 12-group draw
+python -m fifa_predictor.cli groups
+
 # Detailed team profile (stats, key players, availability)
 python -m fifa_predictor.cli team ARG
 
@@ -43,12 +46,17 @@ python -m fifa_predictor.cli predict ARG FRA --knockout
 # What-if: impact of a player's absence
 python -m fifa_predictor.cli injury FRA Mbappe
 
-# Monte Carlo a knockout bracket (power-of-two team count)
+# Simulate the FULL 48-team tournament (group stage -> R32 -> final)
+python -m fifa_predictor.cli worldcup --runs 2000 --top 24
+
+# Or Monte Carlo a standalone knockout bracket (power-of-two team count)
 python -m fifa_predictor.cli simulate ARG FRA BRA ESP ENG POR GER NED --runs 5000
 ```
 
-Team codes: ARG, FRA, BRA, ENG, ESP, POR, GER, NED, USA. You can also pass a
-partial team name (e.g. `Argentina`) or partial player name (e.g. `Mbappe`).
+All 48 nations are available by 3-letter code (ARG, FRA, BRA, ESP, MAR, CRO,
+COL, URU, JPN, MEX, ...) or partial team/player name. The full tournament uses
+the real 2026 format: 12 groups of 4, top 2 plus the 8 best third-placed teams
+into a Round of 32, then single elimination.
 
 ## What the model accounts for
 
@@ -73,12 +81,14 @@ export ANTHROPIC_API_KEY=sk-...
 Without a key, the tool prints a clean rule-based analysis instead — it never
 fails closed.
 
-## Important: data is illustrative
+## Important: what's real vs. modelled
 
-Ratings and stats in `fifa_predictor/data/teams.py` are hand-seeded
-placeholders, NOT a live feed. For accurate predictions, replace the values in
-that one file with real data (FIFA rankings, Opta/FBref stats, transfermarkt
-injuries). The schema in `fifa_predictor/models.py` is the contract.
+Real: FIFA rankings (April 2026), confederations, coaches, key players, and the
+official group draw. The nine elite contenders have detailed hand-authored
+squads; the other 39 nations have team stats **derived from their FIFA ranking**
+(`data/team_builder.py`) — honest estimates, not fake-precise per-player data.
+For maximum accuracy, plug a live stats feed into the data files. The schema in
+`fifa_predictor/models.py` is the contract.
 
 ## Extending
 
