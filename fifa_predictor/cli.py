@@ -15,7 +15,7 @@ import sys
 
 from .data.teams import get_team, list_teams
 from .engine.predictor import team_power_rating, power_ranking
-from .engine.tournament import simulate_bracket
+from .engine.tournament import simulate_bracket, simulate_world_cup
 from .agent import narrate_match, narrate_injury
 
 
@@ -157,6 +157,39 @@ def cmd_simulate(args):
     return 0
 
 
+def cmd_groups(_args):
+    from .data.groups import GROUPS
+    _hr()
+    print("2026 FIFA WORLD CUP — GROUPS (official final draw)")
+    _hr()
+    for letter in sorted(GROUPS):
+        names = []
+        for code in GROUPS[letter]:
+            t = get_team(code)
+            names.append(t.name if t else f"{code}(?)")
+        print(f"  Group {letter}: " + ", ".join(names))
+
+
+def cmd_worldcup(args):
+    print(f"Simulating the full 48-team World Cup {args.runs} times")
+    print("(12 groups -> top 2 + 8 best thirds -> Round of 32 -> Final)...\n")
+    res = simulate_world_cup(runs=args.runs, seed=args.seed)
+    _hr()
+    print(f"WORLD CUP SIMULATION ({res.runs} runs)")
+    _hr()
+    ranked = sorted(res.winner_prob.items(), key=lambda x: x[1], reverse=True)
+    print(f"  {'Team':<6}{'Win':>7}{'Final':>8}{'Semi':>7}{'QF':>7}"
+          f"{'Adv':>8}")
+    limit = args.top if args.top else len(ranked)
+    for code, wp in ranked[:limit]:
+        adv = (1.0 - res.group_exit_prob.get(code, 0)) * 100
+        print(f"  {code:<6}{wp*100:>6.1f}%{res.finalist_prob[code]*100:>7.1f}%"
+              f"{res.semifinal_prob[code]*100:>6.1f}%"
+              f"{res.quarterfinal_prob[code]*100:>6.1f}%{adv:>7.1f}%")
+    print("\n  Win/Final/Semi/QF = reach probability; Adv = escapes the group.")
+    return 0
+
+
 def build_parser():
     p = argparse.ArgumentParser(
         prog="fifa_predictor",
@@ -189,6 +222,16 @@ def build_parser():
     ps.add_argument("--runs", type=int, default=5000)
     ps.add_argument("--seed", type=int, default=None)
     ps.set_defaults(func=cmd_simulate)
+
+    sub.add_parser("groups", help="Show the official 12 groups").set_defaults(
+        func=cmd_groups)
+
+    pw = sub.add_parser("worldcup", help="Simulate the full 48-team tournament")
+    pw.add_argument("--runs", type=int, default=2000)
+    pw.add_argument("--seed", type=int, default=None)
+    pw.add_argument("--top", type=int, default=24,
+                    help="Show only the top N teams (0 = all 48)")
+    pw.set_defaults(func=cmd_worldcup)
 
     return p
 
