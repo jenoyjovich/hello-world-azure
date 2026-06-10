@@ -19,8 +19,14 @@ from ..models import Player, Team, TeamStats
 
 
 def strength_from_rank(fifa_rank: int) -> float:
-    """Map a FIFA ranking to a 0..1 strength factor (rank 1 ~1.0, rank 60 ~0)."""
-    return max(0.0, min(1.0, (60 - fifa_rank) / 59.0))
+    """Map a FIFA ranking to a 0..1 strength factor using a power curve.
+
+    Power = 2.2 creates a steep drop-off: rank #1 → 1.0, rank #7 → 0.81,
+    rank #15 → 0.60, rank #30 → 0.30 — matching the real-world quality gap
+    between elite and mid-tier nations far better than a linear scale.
+    """
+    linear = max(0.0, min(1.0, (60 - fifa_rank) / 59.0))
+    return round(linear ** 2.2, 4)
 
 
 def _base_rating(sf: float) -> int:
@@ -98,9 +104,14 @@ def build_team(name, code, confederation, fifa_rank, coach,
 
     stats = _derive_stats(sf)
 
-    depth = round(5.0 + 4.5 * sf, 1)
-    experience = round(4.5 + 5.0 * sf, 1)
-    pressure = round(5.0 + 4.0 * sf, 1)
+    depth = round(4.0 + 4.0 * sf, 1)
+    # Experience is historically dominated by UEFA/CONMEBOL — other confs
+    # get a lower ceiling even at high rankings.
+    exp_ceiling = {"UEFA": 9.0, "CONMEBOL": 8.5, "CONCACAF": 7.5,
+                   "CAF": 7.0, "AFC": 6.5, "OFC": 5.5}
+    exp_max = exp_ceiling.get(confederation, 7.0)
+    experience = round(min(exp_max, 4.0 + 5.0 * sf), 1)
+    pressure = round(4.5 + 3.5 * sf, 1)
     age_profile = "balanced"
 
     return Team(
