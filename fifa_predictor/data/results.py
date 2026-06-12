@@ -12,6 +12,68 @@ Format per result:
 Set played=False for fixtures not yet completed (won't affect standings/form).
 """
 
+# ── Current matchday (update as tournament progresses) ───────────────────────
+CURRENT_MATCHDAY = 2
+
+
+# ── Suspensions from red cards ────────────────────────────────────────────────
+# Each entry: team code, player name, position, age, club, estimated rating,
+# contribution share, matchdays suspended (list), and reason.
+# Add entries as cards are issued throughout the tournament.
+
+SUSPENSIONS = [
+    # Mexico 2-0 South Africa — June 11 (3 reds, most in a single WC match ever)
+    {
+        "team": "MEX", "name": "Cesar Montes", "position": "CB",
+        "age": 27, "club": "Monterrey", "rating": 78, "contribution": 0.07,
+        "suspended_matchdays": [2],
+        "reason": "Red card vs South Africa — denied obvious goalscoring opportunity",
+    },
+    {
+        "team": "RSA", "name": "Sphephelo Sithole", "position": "CB",
+        "age": 28, "club": "Mamelodi Sundowns", "rating": 73, "contribution": 0.07,
+        "suspended_matchdays": [2],
+        "reason": "Red card vs Mexico — denied obvious goalscoring opportunity",
+    },
+    {
+        "team": "RSA", "name": "Themba Zwane", "position": "LW",
+        "age": 31, "club": "Mamelodi Sundowns", "rating": 74, "contribution": 0.06,
+        "suspended_matchdays": [2],
+        "reason": "Red card vs Mexico — violent conduct (struck opponent)",
+    },
+]
+
+
+def suspension_alerts(team_code: str, matchday: int = None) -> list:
+    """Return human-readable suspension strings for a team at the given matchday."""
+    md = matchday if matchday is not None else CURRENT_MATCHDAY
+    alerts = []
+    for s in SUSPENSIONS:
+        if s["team"] == team_code and md in s["suspended_matchdays"]:
+            alerts.append(
+                f"[SUSPENDED MD{md}] {s['name']} ({s['position']}, "
+                f"{s['club']}) — {s['reason']}"
+            )
+    return alerts
+
+
+def suspension_power_penalty(team_code: str, matchday: int = None) -> float:
+    """
+    Fraction of power rating to deduct for suspended players.
+    Scales with the player's contribution and positional importance.
+    """
+    md = matchday if matchday is not None else CURRENT_MATCHDAY
+    penalty = 0.0
+    position_weight = {"GK": 1.4, "CB": 1.1, "LB": 1.0, "RB": 1.0,
+                       "CDM": 1.2, "CM": 1.0, "CAM": 1.1,
+                       "LW": 1.0, "RW": 1.0, "ST": 1.1}
+    for s in SUSPENSIONS:
+        if s["team"] == team_code and md in s["suspended_matchdays"]:
+            pw = position_weight.get(s["position"], 1.0)
+            penalty += s["contribution"] * pw * 0.5
+    return min(0.15, penalty)   # cap at -15% so one ban isn't catastrophic
+
+
 RESULTS = [
     # ── GROUP A ──────────────────────────────────────────────────────────
     # Matchday 1

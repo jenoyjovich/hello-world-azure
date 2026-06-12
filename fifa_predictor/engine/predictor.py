@@ -93,8 +93,11 @@ def team_power_rating(team: Team) -> float:
         rating += 2.5
 
     # Tournament momentum: wins boost confidence, losses deflate it.
-    from ..data.results import momentum_modifier
+    from ..data.results import momentum_modifier, suspension_power_penalty
     rating *= (1.0 + momentum_modifier(team.code))
+
+    # Suspended players (red cards) — direct power hit for next match.
+    rating *= (1.0 - suspension_power_penalty(team.code))
 
     return max(0.0, rating)
 
@@ -263,13 +266,17 @@ def _key_factors(team_a: Team, team_b: Team, xg_a: float, xg_b: float) -> List[s
 
 
 def _injury_alerts(team: Team) -> List[str]:
+    from ..data.results import suspension_alerts
     alerts = []
     for p in team.injured_players:
         tag = "OUT" if p.injury_status == "injured" else "DOUBTFUL"
         alerts.append(f"[{tag}] {team.name}: {p.name} ({p.injury_detail or 'fitness'})"
                       f" — contribution score {p.contribution_score:.2f}")
     for p in team.suspended_players:
-        alerts.append(f"[SUSP] {team.name}: {p.name} suspended")
+        alerts.append(f"[SUSP] {team.name}: {p.name} suspended (squad flag)")
+    # Real tournament red card suspensions
+    for alert in suspension_alerts(team.code):
+        alerts.append(f"{team.name}: {alert}")
     return alerts
 
 
