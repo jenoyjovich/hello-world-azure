@@ -157,6 +157,28 @@ def cmd_simulate(args):
     return 0
 
 
+def cmd_standings(args):
+    from .data.results import all_standings, group_standings
+    from .data.teams import get_team
+    _hr()
+    print("2026 FIFA WORLD CUP — LIVE GROUP STANDINGS")
+    _hr("-")
+    groups = [args.group.upper()] if args.group else list("ABCDEFGHIJKL")
+    for letter in groups:
+        rows = group_standings(letter)
+        print(f"\n  Group {letter}")
+        print(f"  {'Team':<22} P  W  D  L  GF GA GD Pts")
+        for r in rows:
+            t = get_team(r["code"])
+            name = t.name if t else r["code"]
+            played = r["played"]
+            marker = " ← " if played == 0 else ""
+            print(f"  {name:<22} {r['played']}  {r['won']}  {r['drawn']}  "
+                  f"{r['lost']}  {r['gf']:>2} {r['ga']:>2} {r['gd']:>2} "
+                  f"{r['points']:>3}{marker}")
+    print()
+
+
 def cmd_groups(_args):
     from .data.groups import GROUPS
     _hr()
@@ -225,6 +247,11 @@ def build_parser():
 
     sub.add_parser("groups", help="Show the official 12 groups").set_defaults(
         func=cmd_groups)
+
+    pst = sub.add_parser("standings", help="Live group standings from real results")
+    pst.add_argument("group", nargs="?", default=None,
+                     help="Group letter (A-L). Omit for all groups.")
+    pst.set_defaults(func=cmd_standings)
 
     pw = sub.add_parser("worldcup", help="Simulate the full 48-team tournament")
     pw.add_argument("--runs", type=int, default=2000)

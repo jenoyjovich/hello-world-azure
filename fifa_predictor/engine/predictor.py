@@ -92,6 +92,10 @@ def team_power_rating(team: Team) -> float:
     if team.is_host:
         rating += 2.5
 
+    # Tournament momentum: wins boost confidence, losses deflate it.
+    from ..data.results import momentum_modifier
+    rating *= (1.0 + momentum_modifier(team.code))
+
     return max(0.0, rating)
 
 
