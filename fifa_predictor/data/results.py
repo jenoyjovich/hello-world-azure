@@ -88,7 +88,7 @@ RESULTS = [
 
     # ── GROUP B ──────────────────────────────────────────────────────────
     # Matchday 1
-    {"group": "B", "home": "CAN", "away": "BIH", "hg": None, "ag": None, "played": False},
+    {"group": "B", "home": "CAN", "away": "BIH", "hg": 1, "ag": 1, "played": True},   # Larin 78'
     {"group": "B", "home": "QAT", "away": "SUI", "hg": None, "ag": None, "played": False},
     # Matchday 2
     {"group": "B", "home": "CAN", "away": "QAT", "hg": None, "ag": None, "played": False},
@@ -106,7 +106,7 @@ RESULTS = [
     {"group": "C", "home": "MAR", "away": "HAI", "hg": None, "ag": None, "played": False},
 
     # ── GROUP D ──────────────────────────────────────────────────────────
-    {"group": "D", "home": "USA", "away": "PAR", "hg": None, "ag": None, "played": False},
+    {"group": "D", "home": "USA", "away": "PAR", "hg": 4, "ag": 1, "played": True},    # Balogun x2, no reds
     {"group": "D", "home": "AUS", "away": "TUR", "hg": None, "ag": None, "played": False},
     {"group": "D", "home": "USA", "away": "AUS", "hg": None, "ag": None, "played": False},
     {"group": "D", "home": "TUR", "away": "PAR", "hg": None, "ag": None, "played": False},
